@@ -1,1 +1,401 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gigglewave 🌊😂</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6;
+        }
+        h1, h2, h3, .brand-font {
+            font-family: 'Fredoka', sans-serif;
+        }
+        .wave-bg {
+            background: linear-gradient(135deg, #a855f7 0%, #ec4899 100%);
+        }
+        
+        /* Toast Notification Styling */
+        #toast-container {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 50;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .toast {
+            background-color: #333;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 9999px;
+            font-weight: 500;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.3s ease;
+        }
+        .toast.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    </style>
+</head>
+<body class="text-gray-800 antialiased min-h-screen flex flex-col">
 
+    <!-- Navbar -->
+    <nav class="wave-bg text-white shadow-lg sticky top-0 z-40">
+        <div class="max-w-3xl mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="flex items-center gap-2 cursor-pointer" onclick="window.scrollTo(0,0)">
+                <i class="fa-solid fa-water text-2xl"></i>
+                <span class="text-2xl font-bold tracking-wide brand-font">Gigglewave</span>
+                <i class="fa-regular fa-face-laugh-squint text-2xl text-yellow-300"></i>
+            </div>
+            <div class="hidden sm:flex gap-4 font-medium">
+                <a href="#" class="hover:text-yellow-200 transition">Ontdekken</a>
+                <a href="#" class="hover:text-yellow-200 transition">Mijn Profiel</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="flex-grow max-w-3xl mx-auto w-full px-4 py-8 flex flex-col gap-8">
+        
+        <!-- Post Composer -->
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+            <div class="flex border-b border-gray-100 bg-gray-50">
+                <button id="tab-joke" class="flex-1 py-4 text-center font-semibold text-purple-600 border-b-2 border-purple-600 transition-colors focus:outline-none brand-font text-lg" onclick="switchTab('joke')">
+                    <i class="fa-solid fa-masks-theater mr-2"></i> Vertel een mop
+                </button>
+                <button id="tab-video" class="flex-1 py-4 text-center font-semibold text-gray-500 border-b-2 border-transparent hover:text-pink-500 hover:bg-gray-100 transition-colors focus:outline-none brand-font text-lg" onclick="switchTab('video')">
+                    <i class="fa-brands fa-youtube mr-2"></i> Deel een video
+                </button>
+            </div>
+            
+            <div class="p-4 sm:p-6">
+                <!-- Author Input -->
+                <div class="mb-4">
+                    <input type="text" id="post-author" placeholder="Jouw naam (of blijf anoniem)" class="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-400 transition" maxlength="30">
+                </div>
+
+                <!-- Joke Form -->
+                <div id="form-joke" class="block">
+                    <textarea id="joke-content" placeholder="Wat is het toppunt van grappig?..." class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-400 transition resize-none h-28" maxlength="500"></textarea>
+                </div>
+
+                <!-- Video Form -->
+                <div id="form-video" class="hidden space-y-4">
+                    <input type="text" id="video-title" placeholder="Korte titel voor de video" class="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-400 transition" maxlength="60">
+                    <input type="url" id="video-url" placeholder="YouTube Link (bijv. https://youtube.com/watch?v=...)" class="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-400 transition">
+                    <p class="text-xs text-gray-400 ml-2"><i class="fa-solid fa-circle-info"></i> Alleen YouTube links worden momenteel ondersteund.</p>
+                </div>
+
+                <div class="mt-4 flex justify-end">
+                    <button onclick="submitPost()" class="wave-bg text-white font-bold py-2 px-6 rounded-full shadow hover:shadow-lg hover:opacity-90 transition-all transform hover:-translate-y-0.5 brand-font text-lg">
+                        Plaatsen <i class="fa-solid fa-paper-plane ml-1"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Feed Sort/Filter -->
+        <div class="flex justify-between items-center px-2">
+            <h2 class="text-2xl font-bold text-gray-800 brand-font">Nieuwste Golven 🌊</h2>
+            <select class="bg-white border border-gray-200 rounded-lg px-3 py-1.5 text-sm font-medium text-gray-600 focus:outline-none cursor-pointer">
+                <option>Nieuwste eerst</option>
+                <option>Meeste likes</option>
+            </select>
+        </div>
+
+        <!-- Posts Feed -->
+        <div id="feed" class="flex flex-col gap-6">
+            <!-- Posts will be injected here by JavaScript -->
+        </div>
+
+    </main>
+
+    <!-- Toast Container -->
+    <div id="toast-container"></div>
+
+    <script>
+        // --- State Management ---
+        let currentTab = 'joke'; // 'joke' or 'video'
+        
+        // Initial mock data
+        let posts = [
+            {
+                id: 1,
+                type: 'joke',
+                author: 'Grapjas99',
+                content: 'Waarom heeft een tomaat een rood gezicht?\n\nOmdat hij de slasaus zag! 🍅',
+                likes: 12,
+                timestamp: new Date(Date.now() - 3600000).toISOString(),
+                hasLiked: false
+            },
+            {
+                id: 2,
+                type: 'video',
+                author: 'VideoKoning',
+                title: 'Grappige katten compilatie',
+                videoUrl: 'https://www.youtube.com/watch?v=cbP2N1BQdYc', 
+                likes: 45,
+                timestamp: new Date(Date.now() - 7200000).toISOString(),
+                hasLiked: true
+            }
+        ];
+
+        // --- UI Interactions ---
+
+        function switchTab(tab) {
+            currentTab = tab;
+            const tabJoke = document.getElementById('tab-joke');
+            const tabVideo = document.getElementById('tab-video');
+            const formJoke = document.getElementById('form-joke');
+            const formVideo = document.getElementById('form-video');
+
+            if (tab === 'joke') {
+                // Style Tabs
+                tabJoke.className = "flex-1 py-4 text-center font-semibold text-purple-600 border-b-2 border-purple-600 transition-colors focus:outline-none brand-font text-lg";
+                tabVideo.className = "flex-1 py-4 text-center font-semibold text-gray-500 border-b-2 border-transparent hover:text-pink-500 hover:bg-gray-100 transition-colors focus:outline-none brand-font text-lg";
+                // Show/Hide Forms
+                formJoke.classList.remove('hidden');
+                formVideo.classList.add('hidden');
+            } else {
+                // Style Tabs
+                tabVideo.className = "flex-1 py-4 text-center font-semibold text-pink-600 border-b-2 border-pink-600 transition-colors focus:outline-none brand-font text-lg";
+                tabJoke.className = "flex-1 py-4 text-center font-semibold text-gray-500 border-b-2 border-transparent hover:text-purple-500 hover:bg-gray-100 transition-colors focus:outline-none brand-font text-lg";
+                // Show/Hide Forms
+                formVideo.classList.remove('hidden');
+                formJoke.classList.add('hidden');
+            }
+        }
+
+        function showToast(message) {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.innerText = message;
+            container.appendChild(toast);
+            
+            // Trigger reflow to start transition
+            setTimeout(() => {
+                toast.classList.add('show');
+            }, 10);
+
+            // Remove after 3 seconds
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => {
+                    toast.remove();
+                }, 300); // Wait for transition
+            }, 3000);
+        }
+
+        // --- Logic ---
+
+        function getYouTubeID(url) {
+            const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
+            const match = url.match(regExp);
+            return (match && match[2].length === 11) ? match[2] : null;
+        }
+
+        function escapeHTML(str) {
+            return str.replace(/[&<>'"]/g, 
+                tag => ({
+                    '&': '&amp;',
+                    '<': '&lt;',
+                    '>': '&gt;',
+                    "'": '&#39;',
+                    '"': '&quot;'
+                }[tag] || tag)
+            );
+        }
+
+        function timeAgo(dateString) {
+            const date = new Date(dateString);
+            const seconds = Math.floor((new Date() - date) / 1000);
+            
+            let interval = seconds / 31536000;
+            if (interval > 1) return Math.floor(interval) + " jaar geleden";
+            interval = seconds / 2592000;
+            if (interval > 1) return Math.floor(interval) + " maanden geleden";
+            interval = seconds / 86400;
+            if (interval > 1) return Math.floor(interval) + " dagen geleden";
+            interval = seconds / 3600;
+            if (interval > 1) return Math.floor(interval) + " uur geleden";
+            interval = seconds / 60;
+            if (interval > 1) return Math.floor(interval) + " min geleden";
+            return "Zojuist";
+        }
+
+        function submitPost() {
+            const authorInput = document.getElementById('post-author').value.trim() || 'Anonieme Giechelaar';
+            
+            let newPost = {
+                id: Date.now(),
+                type: currentTab,
+                author: authorInput,
+                likes: 0,
+                timestamp: new Date().toISOString(),
+                hasLiked: false
+            };
+
+            if (currentTab === 'joke') {
+                const content = document.getElementById('joke-content').value.trim();
+                if (!content) {
+                    showToast("Vul wel een mop in!");
+                    return;
+                }
+                newPost.content = content;
+                document.getElementById('joke-content').value = ''; // Reset
+            } else {
+                const title = document.getElementById('video-title').value.trim();
+                const url = document.getElementById('video-url').value.trim();
+                
+                if (!title || !url) {
+                    showToast("Vul een titel en een link in!");
+                    return;
+                }
+                if (!getYouTubeID(url)) {
+                    showToast("Dit lijkt geen geldige YouTube link te zijn.");
+                    return;
+                }
+                
+                newPost.title = title;
+                newPost.videoUrl = url;
+                
+                document.getElementById('video-title').value = ''; // Reset
+                document.getElementById('video-url').value = ''; // Reset
+            }
+
+            // Add to start of array
+            posts.unshift(newPost);
+            document.getElementById('post-author').value = ''; // Reset author
+            
+            showToast("Je post staat live! 🌊");
+            renderPosts();
+        }
+
+        function toggleLike(id) {
+            const post = posts.find(p => p.id === id);
+            if (post) {
+                if (post.hasLiked) {
+                    post.likes--;
+                    post.hasLiked = false;
+                } else {
+                    post.likes++;
+                    post.hasLiked = true;
+                    showToast("Je vindt dit leuk! ❤️");
+                }
+                renderPosts();
+            }
+        }
+
+        function sharePost(id) {
+            // Simplified sharing
+            navigator.clipboard.writeText(window.location.href).then(() => {
+                showToast("Link gekopieerd naar klembord! 📋");
+            }).catch(() => {
+                // Fallback for iframe environments
+                const dummy = document.createElement("input");
+                document.body.appendChild(dummy);
+                dummy.value = window.location.href;
+                dummy.select();
+                document.execCommand("copy");
+                document.body.removeChild(dummy);
+                showToast("Link gekopieerd naar klembord! 📋");
+            });
+        }
+
+        function renderPosts() {
+            const feed = document.getElementById('feed');
+            feed.innerHTML = ''; // Clear current feed
+
+            if (posts.length === 0) {
+                feed.innerHTML = `<div class="text-center text-gray-500 py-10">Nog geen posts... Wees de eerste!</div>`;
+                return;
+            }
+
+            posts.forEach(post => {
+                const safeAuthor = escapeHTML(post.author);
+                const timeStr = timeAgo(post.timestamp);
+                
+                let contentHTML = '';
+
+                if (post.type === 'joke') {
+                    // Replace newlines with <br> for jokes
+                    const safeContent = escapeHTML(post.content).replace(/\n/g, '<br>');
+                    contentHTML = `
+                        <p class="text-gray-700 text-lg leading-relaxed">${safeContent}</p>
+                    `;
+                } else if (post.type === 'video') {
+                    const safeTitle = escapeHTML(post.title);
+                    const ytId = getYouTubeID(post.videoUrl);
+                    contentHTML = `
+                        <h3 class="font-bold text-xl mb-3 text-gray-800">${safeTitle}</h3>
+                        <div class="relative w-full overflow-hidden rounded-xl bg-black" style="padding-top: 56.25%;">
+                            <iframe class="absolute top-0 left-0 w-full h-full border-0" 
+                                src="https://www.youtube.com/embed/${ytId}" 
+                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                                allowfullscreen>
+                            </iframe>
+                        </div>
+                    `;
+                }
+
+                // Like button styling
+                const likeIconClass = post.hasLiked ? 'fa-solid fa-heart text-red-500' : 'fa-regular fa-heart text-gray-500 group-hover:text-red-400';
+                const likeBgClass = post.hasLiked ? 'bg-red-50' : 'bg-gray-50 hover:bg-red-50';
+
+                const postEl = document.createElement('div');
+                postEl.className = 'bg-white rounded-2xl p-5 shadow-sm border border-gray-100 hover:shadow-md transition-shadow';
+                postEl.innerHTML = `
+                    <div class="flex justify-between items-center mb-4">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-full bg-gradient-to-br from-purple-200 to-pink-200 flex items-center justify-center font-bold text-purple-700 text-lg">
+                                ${safeAuthor.charAt(0).toUpperCase()}
+                            </div>
+                            <div>
+                                <div class="font-semibold text-gray-800">${safeAuthor}</div>
+                                <div class="text-xs text-gray-400">${timeStr}</div>
+                            </div>
+                        </div>
+                        <div class="text-xl ${post.type === 'joke' ? 'text-purple-400' : 'text-pink-400'} opacity-50">
+                            <i class="${post.type === 'joke' ? 'fa-solid fa-masks-theater' : 'fa-brands fa-youtube'}"></i>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        ${contentHTML}
+                    </div>
+
+                    <div class="flex items-center gap-4 pt-3 border-t border-gray-50">
+                        <button onclick="toggleLike(${post.id})" class="group flex items-center gap-2 px-3 py-1.5 rounded-full ${likeBgClass} transition-colors">
+                            <i class="${likeIconClass} transition-colors"></i>
+                            <span class="font-medium ${post.hasLiked ? 'text-red-500' : 'text-gray-600 group-hover:text-red-400'} transition-colors">${post.likes}</span>
+                        </button>
+                        <button onclick="sharePost(${post.id})" class="flex items-center gap-2 px-3 py-1.5 rounded-full bg-gray-50 hover:bg-gray-100 text-gray-600 transition-colors">
+                            <i class="fa-solid fa-share"></i>
+                            <span class="font-medium">Delen</span>
+                        </button>
+                    </div>
+                `;
+                
+                feed.appendChild(postEl);
+            });
+        }
+
+        // Initialize
+        window.onload = () => {
+            renderPosts();
+        };
+
+    </script>
+</body>
+</html>
