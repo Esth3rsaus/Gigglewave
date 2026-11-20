@@ -1,1249 +1,778 @@
 <!DOCTYPE html>
 <html lang="nl">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gigglewave 🌊😂</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-    <style>
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: #f3f4f6;
-        }
-        h1, h2, h3, .brand-font {
-            font-family: 'Fredoka', sans-serif;
-        }
-        .wave-bg {
-            background: linear-gradient(135deg, #a855f7 0%, #ec4899 100%);
-        }
-        
-        /* Toast Notification Styling */
-        #toast-container {
-            position: fixed;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 50;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-        .toast {
-            background-color: #333;
-            color: white;
-            padding: 12px 24px;
-            border-radius: 9999px;
-            font-weight: 500;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            opacity: 0;
-            transform: translateY(20px);
-            transition: all 0.3s ease;
-        }
-        .toast.show {
-            opacity: 1;
-            transform: translateY(0);
-        }
-    </style>
+ <meta charset="UTF-8">
+ <meta name="viewport" content="width=device-width, initial-scale=1.0">
+ <title>Gigglewave 🌊😂 - De grappigste plek op het internet!</title>
+ <script src="https://cdn.tailwindcss.com"></script>
+ <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+ <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+ <style>
+ body {
+ font-family: 'Inter', sans-serif;
+ background-color: #f3f4f6;
+ }
+ h1, h2, h3, .brand-font {
+ font-family: 'Fredoka', sans-serif;
+ }
+ .wave-bg {
+ background: linear-gradient(135deg, #a855f7 0%, #ec4899 100%);
+ }
+ 
+ /* Toast Notification Styling */
+ #toast-container {
+ position: fixed;
+ bottom: 20px;
+ left: 50%;
+ transform: translateX(-50%);
+ z-index: 50;
+ display: flex;
+ flex-direction: column;
+ gap: 10px;
+ }
+ .toast {
+ background-color: #333;
+ color: white;
+ padding: 12px 24px;
+ border-radius: 9999px;
+ font-weight: 500;
+ box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+ opacity: 0;
+ transform: translateY(20px);
+ transition: all 0.3s ease;
+ }
+ .toast.show {
+ opacity: 1;
+ transform: translateY(0);
+ }
+
+ .float-anim {
+ animation: float 3s ease-in-out infinite;
+ }
+ @keyframes float {
+ 0% { transform: translateY(0px); }
+ 50% { transform: translateY(-12px); }
+ 100% { transform: translateY(0px); }
+ }
+
+ .post-card {
+ animation: fadeIn 0.4s ease-out;
+ }
+ @keyframes fadeIn {
+ from { opacity: 0; transform: translateY(10px); }
+ to { opacity: 1; transform: translateY(0); }
+ }
+ </style>
 </head>
 <body class="text-gray-800 antialiased min-h-screen flex flex-col">
 
-    <!-- Navbar -->
-    <nav class="wave-bg text-white shadow-lg sticky top-0 z-40">
-        <div class="max-w-3xl mx-auto px-4 py-3 flex justify-between items-center">
-            <div class="flex items-center gap-2 cursor-pointer" onclick="switchView('feed'); window.scrollTo(0,0)">
-                <i class="fa-solid fa-water text-2xl"></i>
-                <span class="text-2xl font-bold tracking-wide brand-font">Gigglewave</span>
-                <i class="fa-regular fa-face-laugh-squint text-2xl text-yellow-300"></i>
-            </div>
-            <div class="flex items-center gap-3 sm:gap-5 font-medium">
-                <button onclick="switchView('feed')" id="nav-feed" class="hover:text-yellow-200 transition font-semibold underline decoration-2 underline-offset-4">Ontdekken</button>
-                <button onclick="switchView('profile')" id="nav-profile" class="hover:text-yellow-200 transition flex items-center gap-2">
-                    <img id="nav-avatar" src="https://placehold.co/40x40/a855f7/ffffff?text=G" alt="Avatar" class="w-7 h-7 rounded-full object-cover border border-white/50 hidden">
-                    <span>Mijn Profiel</span>
-                </button>
-                <button id="btn-google-login" onclick="loginWithGoogle()" class="bg-white text-purple-700 hover:bg-yellow-100 px-3 py-1.5 rounded-full text-sm font-bold shadow transition flex items-center gap-2">
-                    <i class="fa-brands fa-google text-pink-600"></i> <span class="hidden sm:inline">Inloggen</span>
-                </button>
-            </div>
-        </div>
-    </nav>
-
-    <!-- Main Content: FEED VIEW -->
-    <main id="view-feed" class="flex-grow max-w-3xl mx-auto w-full px-4 py-8 flex flex-col gap-8">
-        
-        <!-- Post Composer -->
-        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-            <div class="flex border-b border-gray-100 bg-gray-50">
-                <button id="tab-joke" class="flex-1 py-4 text-center font-semibold text-purple-600 border-b-2 border-purple-600 transition-colors focus:outline-none brand-font text-lg" onclick="switchTab('joke')">
-                    <i class="fa-solid fa-masks-theater mr-2"></i> Vertel een mop
-                </button>
-                <button id="tab-video" class="flex-1 py-4 text-center font-semibold text-gray-500 border-b-2 border-transparent hover:text-pink-500 hover:bg-gray-100 transition-colors focus:outline-none brand-font text-lg" onclick="switchTab('video')">
-                    <i class="fa-brands fa-youtube mr-2"></i> Deel een video
-                </button>
-            </div>
-            
-            <div class="p-4 sm:p-6">
-                <!-- Author Indicator / Input -->
-                <div class="mb-4 flex items-center gap-3 bg-purple-50/60 p-3 rounded-xl border border-purple-100">
-                    <img id="composer-avatar" src="https://placehold.co/40x40/a855f7/ffffff?text=A" alt="Profielfoto" class="w-10 h-10 rounded-full object-cover border border-purple-200">
-                    <div class="flex-grow">
-                        <div class="text-xs text-gray-500">Je plaatst als:</div>
-                        <div id="composer-author-name" class="font-bold text-gray-800">Anonieme Giechelaar</div>
-                    </div>
-                    <button onclick="switchView('profile')" class="text-xs text-purple-600 hover:underline font-medium">Wijzig profiel</button>
-                </div>
-
-                <!-- Joke Form -->
-                <div id="form-joke" class="block">
-                    <textarea id="joke-content" placeholder="Wat is het toppunt van grappig?..." class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-400 transition resize-none h-28" maxlength="500"></textarea>
-                </div>
-
-                <!-- Video Form -->
-                <div id="form-video" class="hidden space-y-4">
-                    <input type="text" id="video-title" placeholder="Korte titel voor de video" class="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-400 transition" maxlength="60">
-                    <input type="url" id="video-url" placeholder="YouTube Link (bijv. https://youtube.com/watch?v=...)" class="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-400 transition">
-                    <p class="text-xs text-gray-400 ml-2"><i class="fa-solid fa-circle-info"></i> Alleen YouTube links worden momenteel ondersteund.</p>
-                </div>
-
-                <div class="mt-4 flex justify-end">
-                    <button onclick="submitPost()" class="wave-bg text-white font-bold py-2 px-6 rounded-full shadow hover:shadow-lg hover:opacity-90 transition-all transform hover:-translate-y-0.5 brand-font text-lg">
-                        Plaatsen <i class="fa-solid fa-paper-plane ml-1"></i>
-                    </button>
-                </div>
-            </div>
-        </div>
-
-        <!-- Feed Sort/Filter -->
-        <div class="flex justify-between items-center px-2">
-            <h2 class="text-2xl font-bold text-gray-800 brand-font">Nieuwste Golven 🌊</h2>
-            <select id="sort-select" onchange="renderPosts()" class="bg-white border border-gray-200 rounded-lg px-3 py-1.5 text-sm font-medium text-gray-600 focus:outline-none cursor-pointer">
-                <option value="newest">Nieuwste eerst</option>
-                <option value="likes">Meeste likes</option>
-            </select>
-        </div>
-
-        <!-- Posts Feed -->
-        <div id="feed" class="flex flex-col gap-6">
-            <div class="text-center text-gray-400 py-8"><i class="fa-solid fa-spinner fa-spin mr-2"></i> Golven laden...</div>
-        </div>
-
-    </main>
-
-    <!-- Main Content: PROFILE VIEW -->
-    <section id="view-profile" class="hidden flex-grow max-w-3xl mx-auto w-full px-4 py-8 flex-col gap-8">
-        
-        <!-- Account Status Banner (Logged out / Anonymous) -->
-        <div id="google-promo-banner" class="bg-gradient-to-r from-purple-100 to-pink-100 border border-purple-200 rounded-2xl p-6 flex flex-col sm:flex-row items-center justify-between gap-4">
-            <div>
-                <h3 class="text-lg font-bold text-purple-900 brand-font">Koppel je Google Account! 🚀</h3>
-                <p class="text-sm text-purple-800">Log in met Google om je account en geplaatste grappen op al je apparaten te bewaren.</p>
-            </div>
-            <button onclick="loginWithGoogle()" class="whitespace-nowrap bg-white text-gray-800 hover:bg-gray-50 font-semibold py-2.5 px-5 rounded-full shadow-sm border border-gray-200 transition flex items-center gap-2">
-                <i class="fa-brands fa-google text-red-500"></i> Inloggen met Google
-            </button>
-        </div>
-
-        <!-- Profile Settings Card -->
-        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-            <div class="flex justify-between items-center mb-6">
-                <h2 class="text-2xl font-bold text-gray-800 brand-font">Jouw Profiel 👤</h2>
-                <button id="btn-logout" onclick="logoutUser()" class="hidden text-sm text-gray-500 hover:text-gray-800 font-medium px-3 py-1.5 rounded-lg border border-gray-200 hover:bg-gray-50 transition">
-                    <i class="fa-solid fa-right-from-bracket mr-1"></i> Uitloggen
-                </button>
-            </div>
-
-            <div class="flex flex-col sm:flex-row gap-6 items-center sm:items-start">
-                <!-- Avatar Preview & Upload -->
-                <div class="flex flex-col items-center gap-3">
-                    <img id="profile-avatar-preview" src="https://placehold.co/120x120/a855f7/ffffff?text=G" alt="Profielfoto" class="w-28 h-28 rounded-full object-cover border-4 border-purple-100 shadow-sm">
-                    <label class="cursor-pointer bg-purple-50 hover:bg-purple-100 text-purple-700 text-xs font-semibold px-3 py-1.5 rounded-full transition">
-                        <i class="fa-solid fa-camera mr-1"></i> Foto kiezen
-                        <input type="file" id="avatar-file-input" accept="image/*" class="hidden" onchange="handleAvatarUpload(event)">
-                    </label>
-                </div>
-
-                <!-- Profile Details Form -->
-                <div class="flex-grow w-full space-y-4">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Weergavenaam</label>
-                        <input type="text" id="profile-name-input" placeholder="Jouw grappige naam" class="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-400 transition" maxlength="30">
-                    </div>
-
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Of plak een link naar een profielfoto (URL)</label>
-                        <input type="url" id="profile-avatar-url" placeholder="https://..." oninput="previewAvatarUrl(this.value)" class="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-400 transition text-sm">
-                    </div>
-
-                    <div class="pt-2 flex flex-wrap gap-3 justify-between items-center">
-                        <button onclick="saveProfile()" class="wave-bg text-white font-bold py-2 px-6 rounded-full shadow hover:opacity-90 transition brand-font">
-                            Profiel Opslaan <i class="fa-solid fa-check ml-1"></i>
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Danger Zone: Delete Account -->
-            <div class="mt-8 pt-6 border-t border-gray-100 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                <div>
-                    <h4 class="text-sm font-bold text-red-600">Gevarenzone</h4>
-                    <p class="text-xs text-gray-500">Verwijder je account, profielgegevens en al je geplaatste grappen permanent.</p>
-                </div>
-                <button onclick="openDeleteModal()" class="bg-red-50 hover:bg-red-100 text-red-600 font-semibold text-sm px-4 py-2 rounded-xl border border-red-200 transition">
-                    <i class="fa-solid fa-trash-can mr-1"></i> Account Verwijderen
-                </button>
-            </div>
-        </div>
-
-        <!-- User's Own Posts -->
-        <div>
-            <h3 class="text-2xl font-bold text-gray-800 brand-font mb-4">Mijn Geplaatste Grappen & Video's 😂 (<span id="my-posts-count">0</span>)</h3>
-            <div id="my-posts-feed" class="flex flex-col gap-6">
-                <!-- User posts injected here -->
-            </div>
-        </div>
-
-    </section>
-
-    <!-- Custom Modal for Account Deletion (No alert/confirm!) -->
-    <div id="delete-modal" class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-        <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-xl border border-gray-100">
-            <div class="w-12 h-12 rounded-full bg-red-100 text-red-600 flex items-center justify-center text-xl mb-4 mx-auto">
-                <i class="fa-solid fa-triangle-exclamation"></i>
-            </div>
-            <h3 class="text-xl font-bold text-center text-gray-900 brand-font mb-2">Account definitief verwijderen?</h3>
-            <p class="text-sm text-gray-600 text-center mb-6">
-                Weet je het zeker? Al jouw profielgegevens en alle grappen en video's die je hebt geplaatst worden definitief verwijderd. Dit kan niet ongedaan worden gemaakt.
-            </p>
-            <div class="flex gap-3">
-                <button onclick="closeDeleteModal()" class="flex-1 py-2.5 px-4 bg-gray-100 hover:bg-gray-200 text-gray-800 font-semibold rounded-xl transition">
-                    Annuleren
-                </button>
-                <button onclick="confirmDeleteAccount()" class="flex-1 py-2.5 px-4 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-xl shadow transition">
-                    Ja, verwijder alles
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Custom Google Account Picker Modal (Fallback voor preview-omgevingen) -->
-    <div id="google-sim-modal" class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-        <div class="bg-white rounded-2xl max-w-sm w-full p-6 shadow-xl border border-gray-100">
-            <div class="flex items-center justify-center gap-2 mb-2">
-                <i class="fa-brands fa-google text-2xl text-red-500"></i>
-                <h3 class="text-xl font-bold text-gray-900 brand-font">Inloggen met Google</h3>
-            </div>
-            <p class="text-xs text-gray-500 text-center mb-5">
-                Kies of vul je Google-accountgegevens in om verder te gaan naar Gigglewave
-            </p>
-            <div class="space-y-3 mb-5">
-                <div>
-                    <label class="block text-xs font-semibold text-gray-600 mb-1">Google Naam</label>
-                    <input type="text" id="sim-google-name" value="Jan de Giechelaar" class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-400">
-                </div>
-                <div>
-                    <label class="block text-xs font-semibold text-gray-600 mb-1">Google E-mailadres</label>
-                    <input type="email" id="sim-google-email" value="jan.giechelaar@gmail.com" class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-400">
-                </div>
-            </div>
-            <div class="flex gap-3">
-                <button onclick="closeGoogleSimModal()" class="flex-1 py-2 px-4 bg-gray-100 hover:bg-gray-200 text-gray-800 font-semibold rounded-xl text-sm transition">
-                    Annuleren
-                </button>
-                <button onclick="confirmSimulatedGoogleLogin()" class="flex-1 py-2 px-4 wave-bg text-white font-semibold rounded-xl text-sm shadow transition">
-                    Doorgaan
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Toast Container -->
-    <div id="toast-container"></div>
-
-    <!-- Firebase & App Logic -->
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { 
-            getAuth, 
-            signInAnonymously, 
-            signInWithCustomToken, 
-            GoogleAuthProvider, 
-            signInWithPopup, 
-            signOut, 
-            deleteUser,
-            onAuthStateChanged 
-        } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { 
-            initializeFirestore, 
-            memoryLocalCache,
-            doc, 
-            getDoc, 
-            getDocs,
-            setDoc, 
-            addDoc, 
-            updateDoc, 
-            deleteDoc, 
-            collection 
-        } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-
-        // --- Firebase Setup ---
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : null;
-        
-        let app = null;
-        let auth = null;
-        let db = null;
-        let useLocalStorageFallback = !firebaseConfig || Object.keys(firebaseConfig).length === 0;
-
-        if (!useLocalStorageFallback) {
-            try {
-                app = initializeApp(firebaseConfig);
-                auth = getAuth(app);
-                // Gebruik memoryLocalCache om WatchStream/IndexedDB assertion-fouten te voorkomen
-                db = initializeFirestore(app, {
-                    localCache: memoryLocalCache()
-                });
-            } catch (e) {
-                console.warn("Firebase init fallback naar lokale opslag:", e);
-                useLocalStorageFallback = true;
-            }
-        }
-
-        // --- Global App State ---
-        let currentUser = null;
-        let isSimulatedGoogleLogin = false;
-        let userProfile = {
-            displayName: 'Anonieme Giechelaar',
-            photoURL: ''
-        };
-        let allPosts = [];
-        let currentTab = 'joke'; // 'joke' or 'video'
-        let currentView = 'feed'; // 'feed' or 'profile'
-
-        // --- Local Storage Helpers (Fallback wanneer Firestore permissions ontbreken) ---
-        const LOCAL_POSTS_KEY = 'gigglewave_local_posts';
-        const LOCAL_USER_KEY = 'gigglewave_local_user';
-
-        function getInitialDemoPosts() {
-            return [
-                {
-                    id: 'demo-1',
-                    type: 'joke',
-                    authorId: 'system-demo',
-                    author: 'MoppenTrommel',
-                    authorPhoto: 'https://placehold.co/120x120/a855f7/ffffff?text=M',
-                    content: 'Wat is groen en skiet van de berg af?\n\nEen skiwi! 🥝⛷️',
-                    likedBy: ['demo-user-1', 'demo-user-2'],
-                    timestamp: new Date(Date.now() - 3600000 * 2).toISOString()
-                },
-                {
-                    id: 'demo-2',
-                    type: 'joke',
-                    authorId: 'system-demo-2',
-                    author: 'Lachbekje',
-                    authorPhoto: 'https://placehold.co/120x120/ec4899/ffffff?text=L',
-                    content: 'Ik heb gisteren een boek besteld over oplichting op het internet...\n\nIk wacht nog steeds tot het binnenkomt! 📦😂',
-                    likedBy: ['demo-user-1'],
-                    timestamp: new Date(Date.now() - 3600000 * 5).toISOString()
-                }
-            ];
-        }
-
-        function loadLocalPosts() {
-            try {
-                const raw = localStorage.getItem(LOCAL_POSTS_KEY);
-                if (raw) {
-                    allPosts = JSON.parse(raw);
-                } else {
-                    allPosts = getInitialDemoPosts();
-                    saveLocalPosts();
-                }
-            } catch (e) {
-                allPosts = getInitialDemoPosts();
-            }
-            renderPosts();
-            renderMyPosts();
-        }
-
-        function saveLocalPosts() {
-            try {
-                localStorage.setItem(LOCAL_POSTS_KEY, JSON.stringify(allPosts));
-            } catch (e) {
-                console.warn("Kon posts niet lokaal opslaan:", e);
-            }
-        }
-
-        function activateLocalFallback() {
-            if (!useLocalStorageFallback) {
-                useLocalStorageFallback = true;
-            }
-            if (!currentUser) {
-                let savedUid = localStorage.getItem(LOCAL_USER_KEY);
-                if (!savedUid) {
-                    savedUid = 'local-' + Math.random().toString(36).substring(2, 10);
-                    localStorage.setItem(LOCAL_USER_KEY, savedUid);
-                }
-                currentUser = { uid: savedUid, isAnonymous: true };
-            }
-            isSimulatedGoogleLogin = localStorage.getItem('gw_sim_google_' + currentUser.uid) === 'true';
-            const savedProfile = localStorage.getItem('gw_profile_' + currentUser.uid);
-            if (savedProfile) {
-                try {
-                    userProfile = JSON.parse(savedProfile);
-                } catch (e) {}
-            }
-            updateAuthUI();
-            loadLocalPosts();
-        }
-
-        // --- Authentication & Initialization ---
-        async function initAuth() {
-            if (useLocalStorageFallback || !auth) {
-                activateLocalFallback();
-                return;
-            }
-            try {
-                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                    await signInWithCustomToken(auth, __initial_auth_token);
-                } else {
-                    await signInAnonymously(auth);
-                }
-            } catch (error) {
-                console.warn("Auth fallback geactiveerd:", error);
-                activateLocalFallback();
-            }
-        }
-
-        if (auth) {
-            onAuthStateChanged(auth, async (user) => {
-                if (user) {
-                    currentUser = user;
-                    isSimulatedGoogleLogin = localStorage.getItem('gw_sim_google_' + user.uid) === 'true';
-                    await loadUserProfile(user);
-                    updateAuthUI();
-                    await fetchPosts();
-                } else {
-                    currentUser = null;
-                    isSimulatedGoogleLogin = false;
-                    try {
-                        await signInAnonymously(auth);
-                    } catch (e) {
-                        activateLocalFallback();
-                    }
-                }
-            });
-        }
-
-        // Laad gebruikersprofiel uit Firestore (met lokale fallback)
-        async function loadUserProfile(user) {
-            const localSaved = localStorage.getItem('gw_profile_' + user.uid);
-            if (localSaved) {
-                try {
-                    userProfile = JSON.parse(localSaved);
-                    return;
-                } catch (e) {}
-            }
-
-            if (useLocalStorageFallback || !db) return;
-
-            try {
-                const profileRef = doc(db, 'artifacts', appId, 'users', user.uid, 'profile', 'info');
-                const snap = await getDoc(profileRef);
-                if (snap.exists()) {
-                    const data = snap.data();
-                    userProfile = {
-                        displayName: data.displayName || user.displayName || 'Anonieme Giechelaar',
-                        photoURL: data.photoURL || user.photoURL || ''
-                    };
-                } else {
-                    userProfile = {
-                        displayName: user.displayName || 'Anonieme Giechelaar',
-                        photoURL: user.photoURL || ''
-                    };
-                }
-            } catch (error) {
-                userProfile = {
-                    displayName: user.displayName || 'Anonieme Giechelaar',
-                    photoURL: user.photoURL || ''
-                };
-            }
-        }
-
-        // Google Login (met slimme fallback voor auth/unauthorized-domain in preview-omgevingen)
-        window.loginWithGoogle = async function() {
-            if (useLocalStorageFallback || !auth) {
-                document.getElementById('google-sim-modal').classList.remove('hidden');
-                return;
-            }
-            const provider = new GoogleAuthProvider();
-            try {
-                const result = await signInWithPopup(auth, provider);
-                const user = result.user;
-                showToast(`Welkom ${user.displayName || 'bij Gigglewave'}! 🎉`);
-                
-                const profileRef = doc(db, 'artifacts', appId, 'users', user.uid, 'profile', 'info');
-                const snap = await getDoc(profileRef);
-                if (!snap.exists()) {
-                    userProfile = {
-                        displayName: user.displayName || 'Google Giechelaar',
-                        photoURL: user.photoURL || ''
-                    };
-                    await setDoc(profileRef, userProfile);
-                }
-                updateAuthUI();
-            } catch (error) {
-                if (error.code === 'auth/unauthorized-domain' || error.code === 'auth/operation-not-allowed' || error.code === 'permission-denied') {
-                    document.getElementById('google-sim-modal').classList.remove('hidden');
-                } else if (error.code === 'auth/popup-closed-by-user') {
-                    showToast("Inlogvenster gesloten.");
-                } else {
-                    document.getElementById('google-sim-modal').classList.remove('hidden');
-                }
-            }
-        };
-
-        window.closeGoogleSimModal = function() {
-            document.getElementById('google-sim-modal').classList.add('hidden');
-        };
-
-        window.confirmSimulatedGoogleLogin = async function() {
-            if (!currentUser) activateLocalFallback();
-            const nameInput = document.getElementById('sim-google-name').value.trim() || 'Google Giechelaar';
-            const emailInput = document.getElementById('sim-google-email').value.trim();
-            
-            closeGoogleSimModal();
-            isSimulatedGoogleLogin = true;
-            localStorage.setItem('gw_sim_google_' + currentUser.uid, 'true');
-
-            userProfile.displayName = nameInput;
-            if (!userProfile.photoURL) {
-                userProfile.photoURL = `https://placehold.co/120x120/ec4899/ffffff?text=${encodeURIComponent(nameInput.charAt(0).toUpperCase())}`;
-            }
-
-            localStorage.setItem('gw_profile_' + currentUser.uid, JSON.stringify(userProfile));
-
-            if (!useLocalStorageFallback && db) {
-                try {
-                    const profileRef = doc(db, 'artifacts', appId, 'users', currentUser.uid, 'profile', 'info');
-                    await setDoc(profileRef, {
-                        displayName: userProfile.displayName,
-                        photoURL: userProfile.photoURL,
-                        email: emailInput
-                    });
-                } catch (error) {
-                    useLocalStorageFallback = true;
-                }
-            }
-            updateAuthUI();
-            showToast(`Ingelogd met Google als ${nameInput}! 🎉`);
-        };
-
-        // Logout
-        window.logoutUser = async function() {
-            try {
-                if (currentUser) {
-                    localStorage.removeItem('gw_sim_google_' + currentUser.uid);
-                }
-                isSimulatedGoogleLogin = false;
-                if (!useLocalStorageFallback && auth) {
-                    await signOut(auth);
-                } else {
-                    userProfile = { displayName: 'Anonieme Giechelaar', photoURL: '' };
-                    updateAuthUI();
-                }
-                showToast("Je bent uitgelogd.");
-                switchView('feed');
-            } catch (error) {
-                console.error("Logout error:", error);
-            }
-        };
-
-        // Delete Account & All User Posts
-        window.openDeleteModal = function() {
-            document.getElementById('delete-modal').classList.remove('hidden');
-        };
-
-        window.closeDeleteModal = function() {
-            document.getElementById('delete-modal').classList.add('hidden');
-        };
-
-        window.confirmDeleteAccount = async function() {
-            if (!currentUser) return;
-            closeDeleteModal();
-            showToast("Account en gegevens worden verwijderd...");
-
-            const uid = currentUser.uid;
-            localStorage.removeItem('gw_sim_google_' + uid);
-            localStorage.removeItem('gw_profile_' + uid);
-            isSimulatedGoogleLogin = false;
-
-            if (useLocalStorageFallback || !db) {
-                allPosts = allPosts.filter(p => p.authorId !== uid);
-                saveLocalPosts();
-                localStorage.removeItem(LOCAL_USER_KEY);
-                currentUser = null;
-                userProfile = { displayName: 'Anonieme Giechelaar', photoURL: '' };
-                activateLocalFallback();
-                showToast("Je account en al je grappen zijn verwijderd. Tot ziens! 👋");
-                switchView('feed');
-                return;
-            }
-
-            try {
-                const userPosts = allPosts.filter(p => p.authorId === uid);
-                for (const post of userPosts) {
-                    const postRef = doc(db, 'artifacts', appId, 'public', 'data', 'posts', post.id);
-                    await deleteDoc(postRef);
-                }
-
-                const profileRef = doc(db, 'artifacts', appId, 'users', uid, 'profile', 'info');
-                await deleteDoc(profileRef);
-
-                await deleteUser(currentUser);
-                
-                showToast("Je account en al je grappen zijn verwijderd. Tot ziens! 👋");
-                switchView('feed');
-            } catch (error) {
-                if (error.code === 'auth/requires-recent-login') {
-                    showToast("Log opnieuw in met Google om je account veilig te verwijderen.");
-                    await loginWithGoogle();
-                } else {
-                    allPosts = allPosts.filter(p => p.authorId !== uid);
-                    saveLocalPosts();
-                    renderPosts();
-                    renderMyPosts();
-                    showToast("Je account en gegevens zijn verwijderd. 👋");
-                    switchView('feed');
-                }
-            }
-        };
-
-        window.closeGoogleSimModal = function() {
-            document.getElementById('google-sim-modal').classList.add('hidden');
-        };
-
-        window.confirmSimulatedGoogleLogin = async function() {
-            if (!currentUser) return;
-            const nameInput = document.getElementById('sim-google-name').value.trim() || 'Google Giechelaar';
-            const emailInput = document.getElementById('sim-google-email').value.trim();
-            
-            closeGoogleSimModal();
-            isSimulatedGoogleLogin = true;
-            localStorage.setItem('gw_sim_google_' + currentUser.uid, 'true');
-
-            userProfile.displayName = nameInput;
-            if (!userProfile.photoURL) {
-                userProfile.photoURL = `https://placehold.co/120x120/ec4899/ffffff?text=${encodeURIComponent(nameInput.charAt(0).toUpperCase())}`;
-            }
-
-            try {
-                const profileRef = doc(db, 'artifacts', appId, 'users', currentUser.uid, 'profile', 'info');
-                await setDoc(profileRef, {
-                    displayName: userProfile.displayName,
-                    photoURL: userProfile.photoURL,
-                    email: emailInput
-                });
-                updateAuthUI();
-                showToast(`Ingelogd met Google als ${nameInput}! 🎉`);
-            } catch (error) {
-                console.error("Error saving Google profile:", error);
-                updateAuthUI();
-            }
-        };
-
-        // Logout
-        window.logoutUser = async function() {
-            try {
-                if (unsubscribePosts) {
-                    unsubscribePosts();
-                    unsubscribePosts = null;
-                }
-                if (currentUser) {
-                    localStorage.removeItem('gw_sim_google_' + currentUser.uid);
-                }
-                isSimulatedGoogleLogin = false;
-                await signOut(auth);
-                showToast("Je bent uitgelogd.");
-                switchView('feed');
-            } catch (error) {
-                console.error("Logout error:", error);
-            }
-        };
-
-        // Delete Account & All User Posts
-        window.openDeleteModal = function() {
-            document.getElementById('delete-modal').classList.remove('hidden');
-        };
-
-        window.closeDeleteModal = function() {
-            document.getElementById('delete-modal').classList.add('hidden');
-        };
-
-        window.confirmDeleteAccount = async function() {
-            if (!currentUser) return;
-            closeDeleteModal();
-            showToast("Account en gegevens worden verwijderd...");
-
-            try {
-                const uid = currentUser.uid;
-                localStorage.removeItem('gw_sim_google_' + uid);
-                isSimulatedGoogleLogin = false;
-
-                // Sluit eerst de actieve listener om Firestore state-conflicten tijdens verwijderen te voorkomen
-                if (unsubscribePosts) {
-                    unsubscribePosts();
-                    unsubscribePosts = null;
-                }
-
-                // 1. Delete all posts created by this user
-                const userPosts = allPosts.filter(p => p.authorId === uid);
-                for (const post of userPosts) {
-                    const postRef = doc(db, 'artifacts', appId, 'public', 'data', 'posts', post.id);
-                    await deleteDoc(postRef);
-                }
-
-                // 2. Delete user profile document
-                const profileRef = doc(db, 'artifacts', appId, 'users', uid, 'profile', 'info');
-                await deleteDoc(profileRef);
-
-                // 3. Delete Firebase Auth User
-                await deleteUser(currentUser);
-                
-                showToast("Je account en al je grappen zijn verwijderd. Tot ziens! 👋");
-                switchView('feed');
-            } catch (error) {
-                if (error.code === 'auth/requires-recent-login') {
-                    showToast("Log opnieuw in met Google om je account veilig te verwijderen.");
-                    await loginWithGoogle();
-                } else {
-                    allPosts = allPosts.filter(p => p.authorId !== uid);
-                    saveLocalPosts();
-                    renderPosts();
-                    renderMyPosts();
-                    showToast("Je account en gegevens zijn verwijderd. 👋");
-                    switchView('feed');
-                }
-            }
-        };
-
-        // --- Profile Management ---
-        function getAvatarUrl(photoURL, name) {
-            if (photoURL && photoURL.trim() !== '') return photoURL;
-            const initial = (name || 'G').charAt(0).toUpperCase();
-            return `https://placehold.co/120x120/a855f7/ffffff?text=${encodeURIComponent(initial)}`;
-        }
-
-        function updateAuthUI() {
-            const isGoogleUser = currentUser && (!currentUser.isAnonymous || isSimulatedGoogleLogin);
-            const avatarUrl = getAvatarUrl(userProfile.photoURL, userProfile.displayName);
-
-            // Navbar updates
-            const navAvatar = document.getElementById('nav-avatar');
-            navAvatar.src = avatarUrl;
-            navAvatar.classList.remove('hidden');
-
-            const loginBtn = document.getElementById('btn-google-login');
-            const logoutBtn = document.getElementById('btn-logout');
-            const promoBanner = document.getElementById('google-promo-banner');
-
-            if (isGoogleUser) {
-                loginBtn.classList.add('hidden');
-                logoutBtn.classList.remove('hidden');
-                promoBanner.classList.add('hidden');
-            } else {
-                loginBtn.classList.remove('hidden');
-                logoutBtn.classList.add('hidden');
-                promoBanner.classList.remove('hidden');
-            }
-
-            // Composer updates
-            document.getElementById('composer-avatar').src = avatarUrl;
-            document.getElementById('composer-author-name').innerText = userProfile.displayName;
-
-            // Profile View updates
-            document.getElementById('profile-avatar-preview').src = avatarUrl;
-            document.getElementById('profile-name-input').value = userProfile.displayName;
-            document.getElementById('profile-avatar-url').value = userProfile.photoURL || '';
-            
-            renderMyPosts();
-        }
-
-        // Convert uploaded image file to resized Data URL (compressed so it fits easily in Firestore < 1MB)
-        window.handleAvatarUpload = function(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                const img = new Image();
-                img.onload = function() {
-                    const canvas = document.createElement('canvas');
-                    const MAX_SIZE = 200;
-                    let width = img.width;
-                    let height = img.height;
-
-                    if (width > height) {
-                        if (width > MAX_SIZE) {
-                            height *= MAX_SIZE / width;
-                            width = MAX_SIZE;
-                        }
-                    } else {
-                        if (height > MAX_SIZE) {
-                            width *= MAX_SIZE / height;
-                            height = MAX_SIZE;
-                        }
-                    }
-                    canvas.width = width;
-                    canvas.height = height;
-                    const ctx = canvas.getContext('2d');
-                    ctx.drawImage(img, 0, 0, width, height);
-                    
-                    const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.8);
-                    document.getElementById('profile-avatar-preview').src = compressedDataUrl;
-                    document.getElementById('profile-avatar-url').value = compressedDataUrl;
-                    showToast("Foto klaar! Klik op 'Profiel Opslaan' om te bevestigen.");
-                };
-                img.src = e.target.result;
-            };
-            reader.readAsDataURL(file);
-        };
-
-        window.previewAvatarUrl = function(url) {
-            const preview = document.getElementById('profile-avatar-preview');
-            preview.src = getAvatarUrl(url, document.getElementById('profile-name-input').value);
-        };
-
-        window.saveProfile = async function() {
-            if (!currentUser) activateLocalFallback();
-            const newName = document.getElementById('profile-name-input').value.trim();
-            const newPhoto = document.getElementById('profile-avatar-url').value.trim();
-
-            if (!newName) {
-                showToast("Vul een geldige naam in!");
-                return;
-            }
-
-            userProfile.displayName = newName;
-            userProfile.photoURL = newPhoto;
-            localStorage.setItem('gw_profile_' + currentUser.uid, JSON.stringify(userProfile));
-
-            if (useLocalStorageFallback || !db) {
-                allPosts = allPosts.map(p => p.authorId === currentUser.uid ? { ...p, author: newName, authorPhoto: newPhoto } : p);
-                saveLocalPosts();
-                renderPosts();
-                updateAuthUI();
-                showToast("Profiel opgeslagen! ✨");
-                return;
-            }
-
-            try {
-                const profileRef = doc(db, 'artifacts', appId, 'users', currentUser.uid, 'profile', 'info');
-                await setDoc(profileRef, userProfile);
-                
-                const myPosts = allPosts.filter(p => p.authorId === currentUser.uid);
-                for (const post of myPosts) {
-                    const postRef = doc(db, 'artifacts', appId, 'public', 'data', 'posts', post.id);
-                    await updateDoc(postRef, {
-                        author: newName,
-                        authorPhoto: newPhoto
-                    });
-                }
-
-                updateAuthUI();
-                showToast("Profiel opgeslagen! ✨");
-            } catch (error) {
-                useLocalStorageFallback = true;
-                allPosts = allPosts.map(p => p.authorId === currentUser.uid ? { ...p, author: newName, authorPhoto: newPhoto } : p);
-                saveLocalPosts();
-                renderPosts();
-                updateAuthUI();
-                showToast("Profiel opgeslagen! ✨");
-            }
-        };
-
-        // --- Firestore Posts ophalen (zonder WatchStream om interne SDK-assertions te voorkomen) ---
-        async function fetchPosts() {
-            if (useLocalStorageFallback || !db || !currentUser) {
-                loadLocalPosts();
-                return;
-            }
-
-            try {
-                const postsCol = collection(db, 'artifacts', appId, 'public', 'data', 'posts');
-                const snapshot = await getDocs(postsCol);
-                allPosts = [];
-                snapshot.forEach((docSnap) => {
-                    allPosts.push({ id: docSnap.id, ...docSnap.data() });
-                });
-                
-                renderPosts();
-                renderMyPosts();
-            } catch (error) {
-                // Schakel geruisloos over naar lokale opslag als Firestore rechten ontbreken
-                useLocalStorageFallback = true;
-                loadLocalPosts();
-            }
-        }
-
-        // --- View & Tab Navigation ---
-        window.switchView = function(view) {
-            currentView = view;
-            const viewFeed = document.getElementById('view-feed');
-            const viewProfile = document.getElementById('view-profile');
-            const navFeed = document.getElementById('nav-feed');
-            const navProfile = document.getElementById('nav-profile');
-
-            if (view === 'feed') {
-                viewFeed.classList.remove('hidden');
-                viewProfile.classList.add('hidden');
-                viewProfile.classList.remove('flex');
-                navFeed.classList.add('font-semibold', 'underline', 'decoration-2', 'underline-offset-4');
-                navProfile.classList.remove('font-semibold', 'underline', 'decoration-2', 'underline-offset-4');
-            } else {
-                viewFeed.classList.add('hidden');
-                viewProfile.classList.remove('hidden');
-                viewProfile.classList.add('flex');
-                navProfile.classList.add('font-semibold', 'underline', 'decoration-2', 'underline-offset-4');
-                navFeed.classList.remove('font-semibold', 'underline', 'decoration-2', 'underline-offset-4');
-                renderMyPosts();
-            }
-        };
-
-        window.switchTab = function(tab) {
-            currentTab = tab;
-            const tabJoke = document.getElementById('tab-joke');
-            const tabVideo = document.getElementById('tab-video');
-            const formJoke = document.getElementById('form-joke');
-            const formVideo = document.getElementById('form-video');
-
-            if (tab === 'joke') {
-                tabJoke.className = "flex-1 py-4 text-center font-semibold text-purple-600 border-b-2 border-purple-600 transition-colors focus:outline-none brand-font text-lg";
-                tabVideo.className = "flex-1 py-4 text-center font-semibold text-gray-500 border-b-2 border-transparent hover:text-pink-500 hover:bg-gray-100 transition-colors focus:outline-none brand-font text-lg";
-                formJoke.classList.remove('hidden');
-                formVideo.classList.add('hidden');
-            } else {
-                tabVideo.className = "flex-1 py-4 text-center font-semibold text-pink-600 border-b-2 border-pink-600 transition-colors focus:outline-none brand-font text-lg";
-                tabJoke.className = "flex-1 py-4 text-center font-semibold text-gray-500 border-b-2 border-transparent hover:text-purple-500 hover:bg-gray-100 transition-colors focus:outline-none brand-font text-lg";
-                formVideo.classList.remove('hidden');
-                formJoke.classList.add('hidden');
-            }
-        };
-
-        // --- Post Actions ---
-        window.submitPost = async function() {
-            if (!currentUser) {
-                showToast("Even geduld, verbinding maken...");
-                return;
-            }
-
-            let newPost = {
-                type: currentTab,
-                authorId: currentUser.uid,
-                author: userProfile.displayName,
-                authorPhoto: userProfile.photoURL || '',
-                likedBy: [],
-                timestamp: new Date().toISOString()
-            };
-
-            if (currentTab === 'joke') {
-                const content = document.getElementById('joke-content').value.trim();
-                if (!content) {
-                    showToast("Vul wel een mop in!");
-                    return;
-                }
-                newPost.content = content;
-                document.getElementById('joke-content').value = '';
-            } else {
-                const title = document.getElementById('video-title').value.trim();
-                const url = document.getElementById('video-url').value.trim();
-                
-                if (!title || !url) {
-                    showToast("Vul een titel en een link in!");
-                    return;
-                }
-                if (!getYouTubeID(url)) {
-                    showToast("Dit lijkt geen geldige YouTube link te zijn.");
-                    return;
-                }
-                
-                newPost.title = title;
-                newPost.videoUrl = url;
-                
-                document.getElementById('video-title').value = '';
-                document.getElementById('video-url').value = '';
-            }
-
-            if (useLocalStorageFallback || !db) {
-                newPost.id = 'post-' + Date.now();
-                allPosts.unshift(newPost);
-                saveLocalPosts();
-                renderPosts();
-                renderMyPosts();
-                showToast("Je post staat live! 🌊");
-                return;
-            }
-
-            try {
-                const postsCol = collection(db, 'artifacts', appId, 'public', 'data', 'posts');
-                const docRef = await addDoc(postsCol, newPost);
-                allPosts.unshift({ id: docRef.id, ...newPost });
-                renderPosts();
-                renderMyPosts();
-                showToast("Je post staat live! 🌊");
-            } catch (error) {
-                useLocalStorageFallback = true;
-                newPost.id = 'post-' + Date.now();
-                allPosts.unshift(newPost);
-                saveLocalPosts();
-                renderPosts();
-                renderMyPosts();
-                showToast("Je post staat live! 🌊");
-            }
-        };
-
-        window.toggleLike = async function(postId) {
-            if (!currentUser) return;
-            const post = allPosts.find(p => p.id === postId);
-            if (!post) return;
-
-            const likedBy = Array.isArray(post.likedBy) ? [...post.likedBy] : [];
-            const index = likedBy.indexOf(currentUser.uid);
-
-            if (index > -1) {
-                likedBy.splice(index, 1);
-            } else {
-                likedBy.push(currentUser.uid);
-                showToast("Je vindt dit leuk! ❤️");
-            }
-
-            post.likedBy = likedBy;
-            renderPosts();
-            renderMyPosts();
-
-            if (useLocalStorageFallback || !db) {
-                saveLocalPosts();
-                return;
-            }
-
-            try {
-                const postRef = doc(db, 'artifacts', appId, 'public', 'data', 'posts', postId);
-                await updateDoc(postRef, { likedBy });
-            } catch (error) {
-                useLocalStorageFallback = true;
-                saveLocalPosts();
-            }
-        };
-
-        window.deleteSinglePost = async function(postId) {
-            if (!currentUser) return;
-            allPosts = allPosts.filter(p => p.id !== postId);
-            renderPosts();
-            renderMyPosts();
-
-            if (useLocalStorageFallback || !db) {
-                saveLocalPosts();
-                showToast("Post verwijderd 🗑️");
-                return;
-            }
-
-            try {
-                const postRef = doc(db, 'artifacts', appId, 'public', 'data', 'posts', postId);
-                await deleteDoc(postRef);
-                showToast("Post verwijderd 🗑️");
-            } catch (error) {
-                useLocalStorageFallback = true;
-                saveLocalPosts();
-                showToast("Post verwijderd 🗑️");
-            }
-        };
-
-        window.sharePost = function() {
-            const dummy = document.createElement("input");
-            document.body.appendChild(dummy);
-            dummy.value = window.location.href;
-            dummy.select();
-            document.execCommand("copy");
-            document.body.removeChild(dummy);
-            showToast("Link gekopieerd naar klembord! 📋");
-        };
-
-        // --- Rendering Helpers ---
-        function createPostElement(post, allowDelete = false) {
-            const safeAuthor = escapeHTML(post.author || 'Anoniem');
-            const timeStr = timeAgo(post.timestamp);
-            const avatarSrc = getAvatarUrl(post.authorPhoto, safeAuthor);
-            const likedBy = Array.isArray(post.likedBy) ? post.likedBy : [];
-            const hasLiked = currentUser && likedBy.includes(currentUser.uid);
-            
-            let contentHTML = '';
-
-            if (post.type === 'joke') {
-                const safeContent = escapeHTML(post.content || '').replace(/\n/g, '<br>');
-                contentHTML = `<p class="text-gray-700 text-lg leading-relaxed">${safeContent}</p>`;
-            } else if (post.type === 'video') {
-                const safeTitle = escapeHTML(post.title || '');
-                const ytId = getYouTubeID(post.videoUrl || '');
-                contentHTML = `
-                    <h3 class="font-bold text-xl mb-3 text-gray-800">${safeTitle}</h3>
-                    <div class="relative w-full overflow-hidden rounded-xl bg-black" style="padding-top: 56.25%;">
-                        <iframe class="absolute top-0 left-0 w-full h-full border-0" 
-                            src="https://www.youtube.com/embed/${ytId}" 
-                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
-                            allowfullscreen>
-                        </iframe>
-                    </div>
-                `;
-            }
-
-            const likeIconClass = hasLiked ? 'fa-solid fa-heart text-red-500' : 'fa-regular fa-heart text-gray-500 group-hover:text-red-400';
-            const likeBgClass = hasLiked ? 'bg-red-50' : 'bg-gray-50 hover:bg-red-50';
-
-            const postEl = document.createElement('div');
-            postEl.className = 'bg-white rounded-2xl p-5 shadow-sm border border-gray-100 hover:shadow-md transition-shadow';
-            postEl.innerHTML = `
-                <div class="flex justify-between items-center mb-4">
-                    <div class="flex items-center gap-3">
-                        <img src="${avatarSrc}" onerror="this.src='https://placehold.co/40x40/a855f7/ffffff?text=G'" alt="${safeAuthor}" class="w-10 h-10 rounded-full object-cover border border-purple-100">
-                        <div>
-                            <div class="font-semibold text-gray-800">${safeAuthor}</div>
-                            <div class="text-xs text-gray-400">${timeStr}</div>
-                        </div>
-                    </div>
-                    <div class="flex items-center gap-3">
-                        <div class="text-xl ${post.type === 'joke' ? 'text-purple-400' : 'text-pink-400'} opacity-50">
-                            <i class="${post.type === 'joke' ? 'fa-solid fa-masks-theater' : 'fa-brands fa-youtube'}"></i>
-                        </div>
-                        ${allowDelete ? `
-                            <button onclick="deleteSinglePost('${post.id}')" title="Verwijder post" class="text-gray-400 hover:text-red-500 transition p-1.5 rounded-lg hover:bg-red-50">
-                                <i class="fa-solid fa-trash-can"></i>
-                            </button>
-                        ` : ''}
-                    </div>
-                </div>
-                
-                <div class="mb-4">
-                    ${contentHTML}
-                </div>
-
-                <div class="flex items-center gap-4 pt-3 border-t border-gray-50">
-                    <button onclick="toggleLike('${post.id}')" class="group flex items-center gap-2 px-3 py-1.5 rounded-full ${likeBgClass} transition-colors">
-                        <i class="${likeIconClass} transition-colors"></i>
-                        <span class="font-medium ${hasLiked ? 'text-red-500' : 'text-gray-600 group-hover:text-red-400'} transition-colors">${likedBy.length}</span>
-                    </button>
-                    <button onclick="sharePost()" class="flex items-center gap-2 px-3 py-1.5 rounded-full bg-gray-50 hover:bg-gray-100 text-gray-600 transition-colors">
-                        <i class="fa-solid fa-share"></i>
-                        <span class="font-medium">Delen</span>
-                    </button>
-                </div>
-            `;
-            return postEl;
-        }
-
-        window.renderPosts = function() {
-            const feed = document.getElementById('feed');
-            const sortBy = document.getElementById('sort-select').value;
-            feed.innerHTML = '';
-
-            if (allPosts.length === 0) {
-                feed.innerHTML = `<div class="text-center text-gray-500 py-10 bg-white rounded-2xl border border-gray-100">Nog geen posts... Wees de eerste die een golf veroorzaakt! 🌊</div>`;
-                return;
-            }
-
-            const sortedPosts = [...allPosts].sort((a, b) => {
-                if (sortBy === 'likes') {
-                    const likesA = Array.isArray(a.likedBy) ? a.likedBy.length : 0;
-                    const likesB = Array.isArray(b.likedBy) ? b.likedBy.length : 0;
-                    return likesB - likesA;
-                }
-                return new Date(b.timestamp) - new Date(a.timestamp);
-            });
-
-            sortedPosts.forEach(post => {
-                const isOwn = currentUser && post.authorId === currentUser.uid;
-                feed.appendChild(createPostElement(post, isOwn));
-            });
-        };
-
-        function renderMyPosts() {
-            const myFeed = document.getElementById('my-posts-feed');
-            const countSpan = document.getElementById('my-posts-count');
-            if (!myFeed || !currentUser) return;
-
-            const myPosts = allPosts
-                .filter(p => p.authorId === currentUser.uid)
-                .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
-
-            countSpan.innerText = myPosts.length;
-            myFeed.innerHTML = '';
-
-            if (myPosts.length === 0) {
-                myFeed.innerHTML = `
-                    <div class="text-center text-gray-500 py-10 bg-white rounded-2xl border border-gray-100">
-                        <p class="mb-3">Je hebt nog geen moppen of video's geplaatst.</p>
-                        <button onclick="switchView('feed')" class="text-purple-600 font-semibold hover:underline">Plaats je eerste grap! 🚀</button>
-                    </div>
-                `;
-                return;
-            }
-
-            myPosts.forEach(post => {
-                myFeed.appendChild(createPostElement(post, true));
-            });
-        }
-
-        // --- Utilities ---
-        function showToast(message) {
-            const container = document.getElementById('toast-container');
-            const toast = document.createElement('div');
-            toast.className = 'toast';
-            toast.innerText = message;
-            container.appendChild(toast);
-            
-            setTimeout(() => toast.classList.add('show'), 10);
-            setTimeout(() => {
-                toast.classList.remove('show');
-                setTimeout(() => toast.remove(), 300);
-            }, 3000);
-        }
-
-        function getYouTubeID(url) {
-            const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
-            const match = url.match(regExp);
-            return (match && match[2].length === 11) ? match[2] : null;
-        }
-
-        function escapeHTML(str) {
-            return String(str).replace(/[&<>'"]/g, 
-                tag => ({
-                    '&': '&amp;',
-                    '<': '&lt;',
-                    '>': '&gt;',
-                    "'": '&#39;',
-                    '"': '&quot;'
-                }[tag] || tag)
-            );
-        }
-
-        function timeAgo(dateString) {
-            const date = new Date(dateString);
-            const seconds = Math.floor((new Date() - date) / 1000);
-            
-            let interval = seconds / 31536000;
-            if (interval > 1) return Math.floor(interval) + " jaar geleden";
-            interval = seconds / 2592000;
-            if (interval > 1) return Math.floor(interval) + " maanden geleden";
-            interval = seconds / 86400;
-            if (interval > 1) return Math.floor(interval) + " dagen geleden";
-            interval = seconds / 3600;
-            if (interval > 1) return Math.floor(interval) + " uur geleden";
-            interval = seconds / 60;
-            if (interval > 1) return Math.floor(interval) + " min geleden";
-            return "Zojuist";
-        }
-
-        // Start App
-        initAuth();
-    </script>
+ <!-- Navbar -->
+ <nav class="wave-bg text-white shadow-lg sticky top-0 z-40">
+ <div class="max-w-3xl mx-auto px-4 py-3 flex justify-between items-center">
+ <div class="flex items-center gap-2 cursor-pointer" onclick="switchView('frontpage'); window.scrollTo(0,0)">
+ <i class="fa-solid fa-water text-2xl"></i>
+ <span class="text-2xl font-bold tracking-wide brand-font">Gigglewave</span>
+ <i class="fa-regular fa-face-laugh-squint text-2xl text-yellow-300"></i>
+ </div>
+ <div class="flex items-center gap-3 sm:gap-5 font-medium">
+ <button onclick="switchView('frontpage')" id="nav-frontpage" class="hover:text-yellow-200 transition font-semibold underline decoration-2 underline-offset-4">Voorpagina</button>
+ <button onclick="switchView('feed')" id="nav-feed" class="hover:text-yellow-200 transition font-normal">Ontdekken</button>
+ <button onclick="switchView('profile')" id="nav-profile" class="hover:text-yellow-200 transition flex items-center gap-2 font-normal">
+ <img id="nav-avatar" src="https://placehold.co/40x40/a855f7/ffffff?text=G" alt="Avatar" class="w-7 h-7 rounded-full object-cover border border-white/50 hidden">
+ <span>Profiel</span>
+ </button>
+ <button id="btn-google-login" onclick="loginWithGoogle()" class="bg-white text-purple-700 hover:bg-yellow-100 px-3 py-1.5 rounded-full text-sm font-bold shadow transition flex items-center gap-2">
+ <i class="fa-brands fa-google text-pink-600"></i> <span class="hidden sm:inline">Inloggen</span>
+ </button>
+ </div>
+ </div>
+ </nav>
+
+ <!-- Main Content: FRONTPAGE VIEW -->
+ <section id="view-frontpage" class="flex flex-grow max-w-4xl mx-auto w-full px-4 py-8 flex-col items-center text-center gap-10">
+ 
+ <!-- Awesome Hero Banner -->
+ <div class="relative w-full rounded-3xl wave-bg p-10 sm:p-16 text-white shadow-2xl overflow-hidden mt-2 sm:mt-6 border-4 border-white/20">
+ <div class="relative z-10 space-y-6">
+ <h1 class="text-4xl sm:text-6xl font-bold brand-font mb-4 drop-shadow-md">
+ Dé plek voor een <span class="text-yellow-300 block sm:inline mt-2 sm:mt-0">glimlach!</span> <i class="fa-solid fa-face-grin-tears text-yellow-300 float-anim inline-block ml-2"></i>
+ </h1>
+ <p class="text-lg sm:text-xl font-medium max-w-2xl mx-auto text-white/95 leading-relaxed drop-shadow">
+ Welkom bij <strong>Gigglewave</strong> 🌊😂. Dit is jouw dagelijkse dosis humor op het internet. Deel je favoriete (of pijnlijkste) moppen, ontdek hilarische video's, en lach samen met de rest van de community.
+ </p>
+ <button onclick="switchView('feed')" class="mt-6 bg-white text-purple-700 hover:bg-yellow-300 hover:text-purple-900 font-bold py-3.5 px-8 rounded-full shadow-lg text-lg transition-all transform hover:scale-105 hover:-translate-y-1 brand-font tracking-wide flex items-center justify-center mx-auto gap-2">
+ Begin met Ontdekken! <i class="fa-solid fa-rocket"></i>
+ </button>
+ </div>
+ 
+ <!-- Decorative background circles -->
+ <div class="absolute -top-10 -right-10 w-40 h-40 bg-white/10 rounded-full blur-2xl"></div>
+ <div class="absolute -bottom-10 -left-10 w-40 h-40 bg-white/10 rounded-full blur-2xl"></div>
+ </div>
+
+ <!-- Features Grid -->
+ <div class="grid grid-cols-1 sm:grid-cols-3 gap-6 w-full mt-2">
+ <!-- Feature 1 -->
+ <div class="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center transform transition duration-300 hover:-translate-y-2 hover:shadow-md">
+ <div class="text-5xl mb-5 float-anim" style="animation-delay: 0s;">🎭</div>
+ <h3 class="text-xl font-bold brand-font text-gray-800 mb-3">Plaats Moppen</h3>
+ <p class="text-gray-500 text-sm leading-relaxed">Ben jij de grappigste thuis? Test je materiaal en deel je beste woordgrappen met de hele wereld.</p>
+ </div>
+ <!-- Feature 2 -->
+ <div class="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center transform transition duration-300 hover:-translate-y-2 hover:shadow-md">
+ <div class="text-5xl mb-5 float-anim" style="animation-delay: 0.8s;">📺</div>
+ <h3 class="text-xl font-bold brand-font text-gray-800 mb-3">Deel Video's</h3>
+ <p class="text-gray-500 text-sm leading-relaxed">YouTube video gezien waar je stuk om ging? Drop de link en laat anderen meegenieten.</p>
+ </div>
+ <!-- Feature 3 -->
+ <div class="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center transform transition duration-300 hover:-translate-y-2 hover:shadow-md">
+ <div class="text-5xl mb-5 float-anim" style="animation-delay: 1.6s;">🌟</div>
+ <h3 class="text-xl font-bold brand-font text-gray-800 mb-3">Word een Legende</h3>
+ <p class="text-gray-500 text-sm leading-relaxed">Verzamel likes, bouw een vette reputatie op en stijg naar de top van de comedy ranglijst.</p>
+ </div>
+ </div>
+ </section>
+
+ <!-- Main Content: FEED VIEW -->
+ <main id="view-feed" class="hidden flex-grow max-w-3xl mx-auto w-full px-4 py-8 flex-col gap-8">
+ 
+ <!-- Post Composer -->
+ <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+ <div class="flex border-b border-gray-100 bg-gray-50">
+ <button id="tab-joke" class="flex-1 py-4 text-center font-semibold text-purple-600 border-b-2 border-purple-600 transition-colors focus:outline-none brand-font text-lg" onclick="switchTab('joke')">
+ <i class="fa-solid fa-masks-theater mr-2"></i> Vertel een mop
+ </button>
+ <button id="tab-video" class="flex-1 py-4 text-center font-semibold text-gray-500 border-b-2 border-transparent hover:text-pink-500 hover:bg-gray-100 transition-colors focus:outline-none brand-font text-lg" onclick="switchTab('video')">
+ <i class="fa-brands fa-youtube mr-2"></i> Deel een video
+ </button>
+ </div>
+ 
+ <div class="p-4 sm:p-6">
+ <!-- Author Indicator / Input -->
+ <div class="mb-4 flex items-center gap-3 bg-purple-50/60 p-3 rounded-xl border border-purple-100">
+ <img id="composer-avatar" src="https://placehold.co/40x40/a855f7/ffffff?text=A" alt="Profielfoto" class="w-10 h-10 rounded-full object-cover border border-purple-200">
+ <div class="flex-grow">
+ <div class="text-xs text-gray-500">Je plaatst als:</div>
+ <div id="composer-author-name" class="font-bold text-gray-800">Anonieme Giechelaar</div>
+ </div>
+ <button onclick="switchView('profile')" class="text-xs text-purple-600 hover:underline font-medium">Wijzig profiel</button>
+ </div>
+
+ <!-- Joke Form -->
+ <div id="form-joke" class="block">
+ <textarea id="joke-content" placeholder="Wat is het toppunt van grappig?..." class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-400 transition resize-none h-28 text-gray-700" maxlength="500"></textarea>
+ </div>
+
+ <!-- Video Form -->
+ <div id="form-video" class="hidden space-y-4">
+ <input type="text" id="video-title" placeholder="Korte titel voor de video (bijv: Grappigste kat ter wereld)" class="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-400 transition text-gray-700" maxlength="60">
+ <input type="url" id="video-url" placeholder="YouTube Link (bijv. https://youtube.com/watch?v=...)" class="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-400 transition text-gray-700">
+ <p class="text-xs text-gray-400 ml-2"><i class="fa-solid fa-circle-info"></i> Alleen YouTube links worden momenteel ondersteund.</p>
+ </div>
+
+ <div class="mt-4 flex justify-end">
+ <button onclick="submitPost()" class="wave-bg text-white font-bold py-2 px-6 rounded-full shadow hover:shadow-lg hover:opacity-90 transition-all transform hover:-translate-y-0.5 brand-font text-lg">
+ Plaatsen <i class="fa-solid fa-paper-plane ml-1"></i>
+ </button>
+ </div>
+ </div>
+ </div>
+
+ <!-- Feed Sort/Filter -->
+ <div class="flex justify-between items-center px-2 mt-2">
+ <h2 class="text-2xl font-bold text-gray-800 brand-font">Nieuwste Golven 🌊</h2>
+ <select id="sort-select" onchange="renderPosts()" class="bg-white border border-gray-200 rounded-lg px-3 py-1.5 text-sm font-medium text-gray-600 focus:outline-none focus:ring-2 focus:ring-purple-400 cursor-pointer">
+ <option value="newest">Nieuwste eerst</option>
+ <option value="likes">Meeste likes</option>
+ </select>
+ </div>
+
+ <!-- Posts Feed -->
+ <div id="feed" class="flex flex-col gap-6">
+ <div class="text-center text-gray-400 py-8"><i class="fa-solid fa-spinner fa-spin mr-2"></i> Golven laden...</div>
+ </div>
+
+ </main>
+
+ <!-- Main Content: PROFILE VIEW -->
+ <section id="view-profile" class="hidden flex-grow max-w-3xl mx-auto w-full px-4 py-8 flex-col gap-8">
+ 
+ <!-- Account Status Banner (Logged out / Anonymous) -->
+ <div id="google-promo-banner" class="bg-gradient-to-r from-purple-100 to-pink-100 border border-purple-200 rounded-2xl p-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+ <div>
+ <h3 class="text-lg font-bold text-purple-900 brand-font">Koppel je Google Account! 🚀</h3>
+ <p class="text-sm text-purple-800">Log in met Google om je account en geplaatste grappen op al je apparaten te bewaren.</p>
+ </div>
+ <button onclick="loginWithGoogle()" class="whitespace-nowrap bg-white text-gray-800 hover:bg-gray-50 font-semibold py-2.5 px-5 rounded-full shadow-sm border border-gray-200 transition flex items-center gap-2">
+ <i class="fa-brands fa-google text-red-500"></i> Inloggen met Google
+ </button>
+ </div>
+
+ <!-- Profile Settings Card -->
+ <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+ <div class="flex justify-between items-center mb-6">
+ <h2 class="text-2xl font-bold text-gray-800 brand-font">Jouw Profiel 👤</h2>
+ <button id="btn-logout" onclick="logoutUser()" class="hidden text-sm text-gray-500 hover:text-gray-800 font-medium px-3 py-1.5 rounded-lg border border-gray-200 hover:bg-gray-50 transition">
+ <i class="fa-solid fa-right-from-bracket mr-1"></i> Uitloggen
+ </button>
+ </div>
+
+ <div class="flex flex-col sm:flex-row gap-6 items-center sm:items-start">
+ <!-- Avatar Preview & Upload -->
+ <div class="flex flex-col items-center gap-3">
+ <img id="profile-avatar-preview" src="https://placehold.co/120x120/a855f7/ffffff?text=G" alt="Profielfoto" class="w-28 h-28 rounded-full object-cover border-4 border-purple-100 shadow-sm bg-gray-100">
+ <label class="cursor-pointer bg-purple-50 hover:bg-purple-100 text-purple-700 text-xs font-semibold px-3 py-1.5 rounded-full transition">
+ <i class="fa-solid fa-camera mr-1"></i> Foto kiezen
+ <input type="file" id="avatar-file-input" accept="image/*" class="hidden" onchange="handleAvatarUpload(event)">
+ </label>
+ </div>
+
+ <!-- Profile Details Form -->
+ <div class="flex-grow w-full space-y-4">
+ <div>
+ <label class="block text-sm font-medium text-gray-700 mb-1">Weergavenaam</label>
+ <input type="text" id="profile-name-input" placeholder="Jouw grappige naam" class="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-400 transition text-gray-800" maxlength="30">
+ </div>
+
+ <div>
+ <label class="block text-sm font-medium text-gray-700 mb-1">Of plak een link naar een profielfoto (URL)</label>
+ <input type="url" id="profile-avatar-url" placeholder="https://..." oninput="previewAvatarUrl(this.value)" class="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-400 transition text-sm text-gray-800">
+ </div>
+
+ <div class="pt-2 flex flex-wrap gap-3 justify-between items-center">
+ <button onclick="saveProfile()" class="wave-bg text-white font-bold py-2 px-6 rounded-full shadow hover:opacity-90 transition brand-font">
+ Profiel Opslaan <i class="fa-solid fa-check ml-1"></i>
+ </button>
+ </div>
+ </div>
+ </div>
+
+ <!-- Danger Zone: Delete Account -->
+ <div class="mt-8 pt-6 border-t border-gray-100 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+ <div>
+ <h4 class="text-sm font-bold text-red-600">Gevarenzone</h4>
+ <p class="text-xs text-gray-500 max-w-sm">Verwijder je account, profielgegevens en al je geplaatste grappen permanent.</p>
+ </div>
+ <button onclick="openDeleteModal()" class="bg-red-50 hover:bg-red-100 text-red-600 font-semibold text-sm px-4 py-2 rounded-xl border border-red-200 transition">
+ <i class="fa-solid fa-trash-can mr-1"></i> Account Verwijderen
+ </button>
+ </div>
+ </div>
+
+ <!-- User's Own Posts -->
+ <div>
+ <h3 class="text-2xl font-bold text-gray-800 brand-font mb-4">Mijn Geplaatste Grappen & Video's 😂 (<span id="my-posts-count">0</span>)</h3>
+ <div id="my-posts-feed" class="flex flex-col gap-6">
+ <!-- User posts injected here -->
+ </div>
+ </div>
+
+ </section>
+
+ <!-- Custom Modal for Account Deletion (No alert/confirm!) -->
+ <div id="delete-modal" class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+ <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-xl border border-gray-100">
+ <div class="w-12 h-12 rounded-full bg-red-100 text-red-600 flex items-center justify-center text-xl mb-4 mx-auto">
+ <i class="fa-solid fa-triangle-exclamation"></i>
+ </div>
+ <h3 class="text-xl font-bold text-center text-gray-900 brand-font mb-2">Account definitief verwijderen?</h3>
+ <p class="text-sm text-gray-600 text-center mb-6">
+ Weet je het zeker? Al jouw profielgegevens en alle grappen en video's die je hebt geplaatst worden definitief verwijderd. Dit kan niet ongedaan worden gemaakt.
+ </p>
+ <div class="flex gap-3">
+ <button onclick="closeDeleteModal()" class="flex-1 py-2.5 px-4 bg-gray-100 hover:bg-gray-200 text-gray-800 font-semibold rounded-xl transition">
+ Annuleren
+ </button>
+ <button onclick="confirmDeleteAccount()" class="flex-1 py-2.5 px-4 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-xl shadow transition">
+ Ja, verwijder alles
+ </button>
+ </div>
+ </div>
+ </div>
+
+ <!-- Custom Google Account Picker Modal (Fallback voor preview-omgevingen) -->
+ <div id="google-sim-modal" class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+ <div class="bg-white rounded-2xl max-w-sm w-full p-6 shadow-xl border border-gray-100">
+ <div class="flex items-center justify-center gap-2 mb-2">
+ <i class="fa-brands fa-google text-2xl text-red-500"></i>
+ <h3 class="text-xl font-bold text-gray-900 brand-font">Inloggen met Google</h3>
+ </div>
+ <p class="text-xs text-gray-500 text-center mb-5">
+ Kies of vul je Google-accountgegevens in om verder te gaan naar Gigglewave
+ </p>
+ <div class="space-y-3 mb-5">
+ <div>
+ <label class="block text-xs font-semibold text-gray-600 mb-1">Google Naam</label>
+ <input type="text" id="sim-google-name" value="Jan de Giechelaar" class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-400">
+ </div>
+ <div>
+ <label class="block text-xs font-semibold text-gray-600 mb-1">Google E-mailadres</label>
+ <input type="email" id="sim-google-email" value="jan.giechelaar@gmail.com" class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-400">
+ </div>
+ </div>
+ <div class="flex gap-3">
+ <button onclick="closeGoogleSimModal()" class="flex-1 py-2 px-4 bg-gray-100 hover:bg-gray-200 text-gray-800 font-semibold rounded-xl text-sm transition">
+ Annuleren
+ </button>
+ <button onclick="confirmSimulatedGoogleLogin()" class="flex-1 py-2 px-4 wave-bg text-white font-semibold rounded-xl text-sm shadow transition">
+ Doorgaan
+ </button>
+ </div>
+ </div>
+ </div>
+
+ <!-- Toast Container -->
+ <div id="toast-container"></div>
+
+ <!-- Firebase & App Logic -->
+ <script type="module">
+ // Note: For the prototype to work seamlessly without real Firebase keys, we rely primarily on the robust local storage fallback 
+ // designed in the prompt, making it instantly demoable as a landing page.
+
+ // --- Global App State ---
+ window.currentUser = null;
+ window.isSimulatedGoogleLogin = false;
+ window.userProfile = {
+ displayName: 'Anonieme Giechelaar',
+ photoURL: ''
+ };
+ window.allPosts = [];
+ window.currentTab = 'joke'; // 'joke' or 'video'
+ window.currentView = 'frontpage'; // 'frontpage', 'feed' or 'profile'
+
+ // --- Local Storage Helpers ---
+ const LOCAL_POSTS_KEY = 'gigglewave_local_posts';
+ const LOCAL_USER_KEY = 'gigglewave_local_user';
+
+ function getInitialDemoPosts() {
+ return [
+ {
+ id: 'demo-1',
+ type: 'joke',
+ authorId: 'system-demo-1',
+ author: 'MoppenTrommel',
+ authorPhoto: 'https://placehold.co/120x120/a855f7/ffffff?text=M',
+ content: 'Wat is groen en skiet van de berg af?\n\nEen skiwi! 🥝⛷️',
+ likedBy: ['demo-user-1', 'demo-user-2', 'demo-user-3'],
+ timestamp: new Date(Date.now() - 3600000 * 2).toISOString()
+ },
+ {
+ id: 'demo-2',
+ type: 'video',
+ authorId: 'system-demo-2',
+ author: 'ComedyFanNL',
+ authorPhoto: 'https://placehold.co/120x120/ec4899/ffffff?text=C',
+ content: 'Hilarische dieren compilatie 🐶',
+ videoUrl: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ', // Classic rickroll for demo
+ likedBy: ['demo-user-1'],
+ timestamp: new Date(Date.now() - 3600000 * 4).toISOString()
+ },
+ {
+ id: 'demo-3',
+ type: 'joke',
+ authorId: 'system-demo-3',
+ author: 'Lachbekje',
+ authorPhoto: 'https://placehold.co/120x120/f59e0b/ffffff?text=L',
+ content: 'Ik heb gisteren een boek besteld over oplichting op het internet...\n\nIk wacht nog steeds tot het binnenkomt! 📦😂',
+ likedBy: ['demo-user-1', 'demo-user-4'],
+ timestamp: new Date(Date.now() - 3600000 * 5).toISOString()
+ }
+ ];
+ }
+
+ function loadLocalPosts() {
+ try {
+ const raw = localStorage.getItem(LOCAL_POSTS_KEY);
+ if (raw) {
+ window.allPosts = JSON.parse(raw);
+ } else {
+ window.allPosts = getInitialDemoPosts();
+ saveLocalPosts();
+ }
+ } catch (e) {
+ window.allPosts = getInitialDemoPosts();
+ }
+ window.renderPosts();
+ window.renderMyPosts();
+ }
+
+ function saveLocalPosts() {
+ try {
+ localStorage.setItem(LOCAL_POSTS_KEY, JSON.stringify(window.allPosts));
+ } catch (e) {
+ console.warn("Kon posts niet lokaal opslaan:", e);
+ }
+ }
+
+ function activateLocalFallback() {
+ if (!window.currentUser) {
+ let savedUid = localStorage.getItem(LOCAL_USER_KEY);
+ if (!savedUid) {
+ savedUid = 'local-' + Math.random().toString(36).substring(2, 10);
+ localStorage.setItem(LOCAL_USER_KEY, savedUid);
+ }
+ window.currentUser = { uid: savedUid, isAnonymous: true };
+ }
+ window.isSimulatedGoogleLogin = localStorage.getItem('gw_sim_google_' + window.currentUser.uid) === 'true';
+ const savedProfile = localStorage.getItem('gw_profile_' + window.currentUser.uid);
+ if (savedProfile) {
+ try {
+ window.userProfile = JSON.parse(savedProfile);
+ } catch (e) {}
+ }
+ updateAuthUI();
+ loadLocalPosts();
+ }
+
+ // Initialize the app data
+ document.addEventListener('DOMContentLoaded', () => {
+ activateLocalFallback();
+ });
+
+
+ // --- View & Tab Navigation ---
+ window.switchView = function(view) {
+ window.currentView = view;
+ const viewFrontpage = document.getElementById('view-frontpage');
+ const viewFeed = document.getElementById('view-feed');
+ const viewProfile = document.getElementById('view-profile');
+ 
+ const navFrontpage = document.getElementById('nav-frontpage');
+ const navFeed = document.getElementById('nav-feed');
+ const navProfile = document.getElementById('nav-profile');
+
+ // Reset all views
+ viewFrontpage.classList.add('hidden');
+ viewFrontpage.classList.remove('flex');
+ viewFeed.classList.add('hidden');
+ viewFeed.classList.remove('flex');
+ viewProfile.classList.add('hidden');
+ viewProfile.classList.remove('flex');
+
+ // Reset all nav links
+ [navFrontpage, navFeed, navProfile].forEach(nav => {
+ if (nav) {
+ nav.classList.remove('font-semibold', 'underline', 'decoration-2', 'underline-offset-4');
+ nav.classList.add('font-normal');
+ }
+ });
+
+ // Activate chosen view
+ if (view === 'frontpage') {
+ viewFrontpage.classList.remove('hidden');
+ viewFrontpage.classList.add('flex');
+ if (navFrontpage) {
+ navFrontpage.classList.add('font-semibold', 'underline', 'decoration-2', 'underline-offset-4');
+ navFrontpage.classList.remove('font-normal');
+ }
+ } else if (view === 'feed') {
+ viewFeed.classList.remove('hidden');
+ viewFeed.classList.add('flex');
+ if (navFeed) {
+ navFeed.classList.add('font-semibold', 'underline', 'decoration-2', 'underline-offset-4');
+ navFeed.classList.remove('font-normal');
+ }
+ } else if (view === 'profile') {
+ viewProfile.classList.remove('hidden');
+ viewProfile.classList.add('flex');
+ if (navProfile) {
+ navProfile.classList.add('font-semibold', 'underline', 'decoration-2', 'underline-offset-4');
+ navProfile.classList.remove('font-normal');
+ }
+ }
+ };
+
+ window.switchTab = function(tab) {
+ window.currentTab = tab;
+ const formJoke = document.getElementById('form-joke');
+ const formVideo = document.getElementById('form-video');
+ const tabJoke = document.getElementById('tab-joke');
+ const tabVideo = document.getElementById('tab-video');
+
+ if (tab === 'joke') {
+ formJoke.classList.remove('hidden');
+ formVideo.classList.add('hidden');
+ tabJoke.classList.add('text-purple-600', 'border-purple-600');
+ tabJoke.classList.remove('text-gray-500', 'border-transparent', 'hover:text-pink-500', 'hover:bg-gray-100');
+ tabVideo.classList.add('text-gray-500', 'border-transparent', 'hover:text-pink-500', 'hover:bg-gray-100');
+ tabVideo.classList.remove('text-purple-600', 'border-purple-600');
+ } else {
+ formJoke.classList.add('hidden');
+ formVideo.classList.remove('hidden');
+ formVideo.classList.add('block');
+ tabVideo.classList.add('text-purple-600', 'border-purple-600');
+ tabVideo.classList.remove('text-gray-500', 'border-transparent', 'hover:text-pink-500', 'hover:bg-gray-100');
+ tabJoke.classList.add('text-gray-500', 'border-transparent', 'hover:text-pink-500', 'hover:bg-gray-100');
+ tabJoke.classList.remove('text-purple-600', 'border-purple-600');
+ }
+ };
+
+ // --- Submitting Content ---
+ window.submitPost = function() {
+ if (!window.currentUser) {
+ window.showToast("Oeps, er ging iets mis. Ververs de pagina.");
+ return;
+ }
+
+ const newPost = {
+ id: 'post-' + Date.now() + Math.floor(Math.random()*1000),
+ authorId: window.currentUser.uid,
+ author: window.userProfile.displayName,
+ authorPhoto: window.userProfile.photoURL || `https://placehold.co/120x120/a855f7/ffffff?text=${window.userProfile.displayName.charAt(0).toUpperCase()}`,
+ likedBy: [],
+ timestamp: new Date().toISOString()
+ };
+
+ if (window.currentTab === 'joke') {
+ const content = document.getElementById('joke-content').value.trim();
+ if (!content) {
+ window.showToast("Je bent vergeten de grap te typen!");
+ return;
+ }
+ newPost.type = 'joke';
+ newPost.content = content;
+ } else {
+ const title = document.getElementById('video-title').value.trim();
+ const url = document.getElementById('video-url').value.trim();
+ if (!title || !url) {
+ window.showToast("Vul zowel een titel als een YouTube link in.");
+ return;
+ }
+ if (!extractYouTubeID(url)) {
+ window.showToast("Dit lijkt geen geldige YouTube link te zijn.");
+ return;
+ }
+ newPost.type = 'video';
+ newPost.content = title;
+ newPost.videoUrl = url;
+ }
+
+ // Add to local array
+ window.allPosts.unshift(newPost);
+ saveLocalPosts();
+ 
+ // Clear forms
+ document.getElementById('joke-content').value = '';
+ document.getElementById('video-title').value = '';
+ document.getElementById('video-url').value = '';
+ 
+ window.showToast("Succesvol geplaatst! 🚀");
+ window.renderPosts();
+ window.renderMyPosts();
+ };
+
+ function extractYouTubeID(url) {
+ const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+ const match = url.match(regExp);
+ return (match && match[2].length === 11) ? match[2] : null;
+ }
+
+ // --- Rendering Feeds ---
+ window.renderPosts = function() {
+ const feed = document.getElementById('feed');
+ const sortType = document.getElementById('sort-select').value;
+ 
+ let displayPosts = [...window.allPosts];
+ 
+ if (sortType === 'likes') {
+ displayPosts.sort((a, b) => (b.likedBy.length || 0) - (a.likedBy.length || 0));
+ } else {
+ displayPosts.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+ }
+
+ if (displayPosts.length === 0) {
+ feed.innerHTML = `<div class="text-center text-gray-500 py-10 bg-white rounded-2xl border border-gray-100 shadow-sm"><i class="fa-solid fa-wind text-4xl mb-3 opacity-20"></i><br>Nog geen golven hier... Wees de eerste!</div>`;
+ return;
+ }
+
+ feed.innerHTML = displayPosts.map(post => generatePostHTML(post)).join('');
+ };
+
+ window.renderMyPosts = function() {
+ const feed = document.getElementById('my-posts-feed');
+ const myPostsCount = document.getElementById('my-posts-count');
+ 
+ if (!window.currentUser) return;
+
+ const myPosts = window.allPosts.filter(p => p.authorId === window.currentUser.uid);
+ // Sort newest first
+ myPosts.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+ 
+ myPostsCount.innerText = myPosts.length;
+
+ if (myPosts.length === 0) {
+ feed.innerHTML = `<div class="text-center text-gray-500 py-8 bg-gray-50 rounded-xl border border-dashed border-gray-300">Je hebt nog niets geplaatst. Tijd voor een goeie grap!</div>`;
+ return;
+ }
+
+ feed.innerHTML = myPosts.map(post => generatePostHTML(post, true)).join('');
+ };
+
+ function generatePostHTML(post, isProfileView = false) {
+ const isLiked = window.currentUser && post.likedBy.includes(window.currentUser.uid);
+ const likeIcon = isLiked ? 'fa-solid fa-heart text-pink-500' : 'fa-regular fa-heart text-gray-400 hover:text-pink-500';
+ const likeCount = post.likedBy.length;
+ 
+ // Format date relatively
+ const postDate = new Date(post.timestamp);
+ const now = new Date();
+ const diffMs = now - postDate;
+ const diffMins = Math.floor(diffMs / 60000);
+ let timeString = "";
+ if (diffMins < 1) timeString = "Zojuist";
+ else if (diffMins < 60) timeString = `${diffMins} min. geleden`;
+ else if (diffMins < 1440) timeString = `${Math.floor(diffMins/60)} uur geleden`;
+ else timeString = `${Math.floor(diffMins/1440)} dagen geleden`;
+
+ let contentHTML = '';
+ if (post.type === 'video') {
+ const ytId = extractYouTubeID(post.videoUrl);
+ contentHTML = `
+ <div class="mb-3 font-medium text-gray-800">${escapeHTML(post.content)}</div>
+ <div class="relative w-full overflow-hidden rounded-xl bg-gray-100" style="padding-top: 56.25%;">
+ <iframe class="absolute top-0 left-0 w-full h-full" src="https://www.youtube.com/embed/${ytId}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+ </div>
+ `;
+ } else {
+ // Replace newlines with <br> for jokes
+ contentHTML = `<p class="text-gray-800 text-lg whitespace-pre-wrap leading-relaxed">${escapeHTML(post.content)}</p>`;
+ }
+
+ const deleteBtn = (isProfileView || (window.currentUser && window.currentUser.uid === post.authorId)) 
+ ? `<button onclick="deletePost('${post.id}')" class="text-xs text-red-400 hover:text-red-600 transition p-2"><i class="fa-solid fa-trash-can"></i> Verwijder</button>` 
+ : '';
+
+ return `
+ <div class="bg-white p-5 sm:p-6 rounded-2xl shadow-sm border border-gray-100 flex flex-col gap-4 post-card">
+ <div class="flex justify-between items-start">
+ <div class="flex items-center gap-3">
+ <img src="${post.authorPhoto}" alt="${escapeHTML(post.author)}" class="w-10 h-10 rounded-full object-cover border border-purple-100 bg-gray-50">
+ <div>
+ <div class="font-bold text-gray-900">${escapeHTML(post.author)}</div>
+ <div class="text-xs text-gray-400">${timeString}</div>
+ </div>
+ </div>
+ ${deleteBtn}
+ </div>
+ 
+ <div class="pl-0 sm:pl-13">
+ ${contentHTML}
+ </div>
+
+ <div class="flex items-center mt-2 border-t border-gray-50 pt-3">
+ <button onclick="toggleLike('${post.id}')" class="flex items-center gap-2 px-3 py-1.5 rounded-full hover:bg-pink-50 transition group">
+ <i class="${likeIcon} text-lg transition-transform group-hover:scale-110"></i> 
+ <span class="font-semibold ${isLiked ? 'text-pink-600' : 'text-gray-500 group-hover:text-pink-600'}">${likeCount}</span>
+ </button>
+ </div>
+ </div>
+ `;
+ }
+
+ window.toggleLike = function(postId) {
+ if (!window.currentUser) return;
+ 
+ const postIndex = window.allPosts.findIndex(p => p.id === postId);
+ if (postIndex === -1) return;
+
+ const post = window.allPosts[postIndex];
+ const userIndex = post.likedBy.indexOf(window.currentUser.uid);
+
+ if (userIndex === -1) {
+ post.likedBy.push(window.currentUser.uid);
+ } else {
+ post.likedBy.splice(userIndex, 1);
+ }
+
+ saveLocalPosts();
+ window.renderPosts();
+ if (window.currentView === 'profile') {
+ window.renderMyPosts();
+ }
+ };
+
+ window.deletePost = function(postId) {
+ if (!confirm("Weet je zeker dat je deze post wilt verwijderen?")) return;
+ 
+ window.allPosts = window.allPosts.filter(p => p.id !== postId);
+ saveLocalPosts();
+ window.renderPosts();
+ window.renderMyPosts();
+ window.showToast("Post verwijderd.");
+ };
+
+
+ // --- Utility Functions ---
+ function escapeHTML(str) {
+ return str.replace(/[&<>'"]/g, 
+ tag => ({
+ '&': '&amp;',
+ '<': '&lt;',
+ '>': '&gt;',
+ "'": '&#39;',
+ '"': '&quot;'
+ }[tag]));
+ }
+
+ window.showToast = function(message) {
+ const container = document.getElementById('toast-container');
+ const toast = document.createElement('div');
+ toast.className = 'toast';
+ toast.innerHTML = message;
+ container.appendChild(toast);
+ 
+ // Trigger reflow
+ void toast.offsetWidth;
+ 
+ toast.classList.add('show');
+ 
+ setTimeout(() => {
+ toast.classList.remove('show');
+ setTimeout(() => {
+ if (container.contains(toast)) container.removeChild(toast);
+ }, 300);
+ }, 3000);
+ };
+
+ // --- Profile/Auth (Faking the provided UI logic from the prompt) ---
+ window.loginWithGoogle = function() {
+ document.getElementById('google-sim-modal').classList.remove('hidden');
+ };
+
+ window.updateAuthUI = function() {
+ const isGoogleUser = window.currentUser && (!window.currentUser.isAnonymous || window.isSimulatedGoogleLogin);
+ const avatarUrl = window.userProfile.photoURL || `https://placehold.co/120x120/a855f7/ffffff?text=${window.userProfile.displayName.charAt(0).toUpperCase()}`;
+
+ // Navbar updates
+ const navAvatar = document.getElementById('nav-avatar');
+ navAvatar.src = avatarUrl;
+ navAvatar.classList.remove('hidden');
+
+ const loginBtn = document.getElementById('btn-google-login');
+ const logoutBtn = document.getElementById('btn-logout');
+ const promoBanner = document.getElementById('google-promo-banner');
+
+ if (isGoogleUser) {
+ loginBtn.classList.add('hidden');
+ logoutBtn.classList.remove('hidden');
+ promoBanner.classList.add('hidden');
+ } else {
+ loginBtn.classList.remove('hidden');
+ logoutBtn.classList.add('hidden');
+ promoBanner.classList.remove('hidden');
+ }
+
+ // Composer updates
+ document.getElementById('composer-avatar').src = avatarUrl;
+ document.getElementById('composer-author-name').innerText = window.userProfile.displayName;
+
+ // Profile View updates
+ document.getElementById('profile-avatar-preview').src = avatarUrl;
+ document.getElementById('profile-name-input').value = window.userProfile.displayName;
+ document.getElementById('profile-avatar-url').value = window.userProfile.photoURL || '';
+ 
+ window.renderMyPosts();
+ };
+ </script>
 </body>
 </html>
